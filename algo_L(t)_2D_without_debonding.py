@@ -15,7 +15,7 @@ import numpy as np
 plot_mesh = False
 plot_displacement = False
 plot_denom_tL = False
-write_tL_csv = False; path_file = "t(L)_0.csv"
+write_tL_csv = True; path_file = "t(L)_0-1_15_N350.csv"
 const_k = 1.
 const_nu = 0.25
 cell = "square"
@@ -29,10 +29,10 @@ def sigma(v, nu):
 
 """(1) Discretization for the values of L"""
 # number of points
-N = 9
+N = 350
 # inf/sup boundaries
-b_inf = 0.2
-b_sup = 3
+b_inf = 0.1
+b_sup = 15
 # discretization step
 h = (b_sup-b_inf)/(N-1)
 # discretization vector
@@ -41,7 +41,7 @@ vect_L = np.arange(start=b_inf, stop=b_sup+(h-1e-7), step=h)
 """(2) Definition of the unique mesh"""
 print("Creation of the mesh ...")
 # number of discretization points
-M = 20
+M = 30
 # definition of the mesh 
 mesh = fd.UnitSquareMesh(M, M)
 # plot of the mesh (optional)
