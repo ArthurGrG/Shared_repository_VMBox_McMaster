@@ -16,7 +16,8 @@ fd.OMP_NUM_THREADS=4
 plot_mesh = False
 plot_displacement = False
 plot_denom_tL = False
-write_tL_csv = True; path_file = "tL_hex_0-1_15_N350.csv"
+write_tL_csv = True; path_file_tL = "./results_csv/tL_hex_0-1_10_N1500.csv"
+write_DE_csv = True; path_file_DE = "./results_csv/DE_hex_0-1_10_N1500.csv"
 const_k = 1.
 const_nu = 0.25
 cell = "hexagonal"
@@ -30,10 +31,10 @@ def sigma(v, nu):
 
 """(1) Discretization for the values of L"""
 # number of points
-N = 350
+N = 1500
 # inf/sup boundaries
 b_inf = 0.1
-b_sup = 15
+b_sup = 10
 # discretization step
 h = (b_sup-b_inf)/(N-1)
 # discretization vector
@@ -124,11 +125,18 @@ for i in range(0, N-1):
     vect_tL[i] = np.sqrt((L*nb_edges)/np.abs(denom_tL))
     if(plot_denom_tL == True): 
         vect_denom_tL[i] = denom_tL
-    
-# writing the result in a file 
+# writing the result of t(L) in a file 
 if(write_tL_csv == True):
-    print("Writing the result in csv file...")
-    np.savetxt(path_file, np.c_[vect_L[:-1], vect_tL].T, delimiter=',')
+    print("Writing the t(L) result in csv file...")
+    np.savetxt(path_file_tL, np.c_[vect_L[:-1], vect_tL].T, delimiter=',')
+# writing the result of the energy density DE(t, L(t))
+if(write_DE_csv == True): 
+    if(cell == "square"):
+        DE = ((vect_tL**2)*vect_FL[:-1] + nb_edges*vect_L[:-1])/(vect_L[:-1]**2)
+    if(cell == "hexagonal"):
+        DE = (2/(np.sqrt(3)*3))*(((vect_tL**2)*vect_FL[:-1] + nb_edges*vect_L[:-1])/(vect_L[:-1]**2))
+    print("Writing the DE(t, L(t)) result in csv file...")
+    np.savetxt(path_file_DE, np.c_[vect_tL, DE].T, delimiter=',')
 # plot denominator of t(L) (optional)
 if(plot_denom_tL == True):
     plt.figure()
