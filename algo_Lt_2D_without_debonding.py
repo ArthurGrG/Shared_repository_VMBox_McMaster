@@ -10,17 +10,18 @@ Created on Thu May 26 12:39:45 2022
 import firedrake as fd
 import matplotlib.pyplot as plt
 import numpy as np
+from firedrake.petsc import PETSc
 
 """General parameters"""
-fd.OMP_NUM_THREADS=4
+#fd.OMP_NUM_THREADS=1
 plot_mesh = False
 plot_displacement = False
 plot_denom_tL = False
-write_tL_csv = True; path_file_tL = "./results_csv/tL_hex_0-1_10_N1500.csv"
-write_DE_csv = True; path_file_DE = "./results_csv/DE_hex_0-1_10_N1500.csv"
+write_tL_csv = True; path_file_tL = "./results_csv/tL_square_0-1_10_N1500.csv"
+write_DE_csv = True; path_file_DE = "./results_csv/DE_square_0-1_10_N1500.csv"
 const_k = 1.
 const_nu = 0.25
-cell = "hexagonal"
+cell = "square"
 
 """Functions for the variational formulation"""
 def sym_grad(v): 
@@ -41,7 +42,7 @@ h = (b_sup-b_inf)/(N-1)
 vect_L = np.arange(start=b_inf, stop=b_sup+(h-1e-7), step=h)
 
 """(2) Definition of the unique mesh"""
-print("Creation of the mesh ...")
+PETSc.Sys.Print('Creation of the mesh ...')
 # number of discretization points
 M = 30
 # definition of the mesh 
@@ -65,12 +66,12 @@ u = fd.TrialFunction(V)
 v = fd.TestFunction(V)
     
 """(3) Computation of the F(Li) values"""
-print("Computation of the values of F(L)...")
+PETSc.Sys.Print('Computation of the values of F(L)...')
 # initialization of the F(Li) vector
 vect_FL = np.zeros(N)
 # loop over the values of L 
 for i in range(0, N): 
-    print("Index " + str(i) + "/" + str(N))
+    PETSc.Sys.Print('Index %d / %d' % (i, N))
     # variable for L²
     L2 = vect_L[i]**2
     # update the function f wrt the used cell
@@ -96,7 +97,7 @@ for i in range(0, N):
     
     
 """(4) Computation of F'(Li) i = 0, ..., N-1 (not for LN) with finite diffenrences"""
-print("Computation of the values of F'(L)...")
+PETSc.Sys.Print("Computation of the values of F'(L)...")
 # initialization of the F'(Li) vector 
 vect_Fp_L = np.zeros(N-1)
 # loop over the values of L 
@@ -105,7 +106,7 @@ for i in range(0, N-1):
     
     
 """(5) Computation of the t(Li), i = 0, ..., N and wrinting in csv file"""
-print("Computation of t(L)...")
+PETSc.Sys.Print('Computation of t(L)...')
 # number of edges for the cell considered
 if cell == "square": 
     nb_edges = 4
@@ -127,7 +128,7 @@ for i in range(0, N-1):
         vect_denom_tL[i] = denom_tL
 # writing the result of t(L) in a file 
 if(write_tL_csv == True):
-    print("Writing the t(L) result in csv file...")
+    PETSc.Sys.Print("Writing the t(L) result in csv file...")
     np.savetxt(path_file_tL, np.c_[vect_L[:-1], vect_tL].T, delimiter=',')
 # writing the result of the energy density DE(t, L(t))
 if(write_DE_csv == True): 
@@ -135,7 +136,7 @@ if(write_DE_csv == True):
         DE = ((vect_tL**2)*vect_FL[:-1] + nb_edges*vect_L[:-1])/(vect_L[:-1]**2)
     if(cell == "hexagonal"):
         DE = (2/(np.sqrt(3)*3))*(((vect_tL**2)*vect_FL[:-1] + nb_edges*vect_L[:-1])/(vect_L[:-1]**2))
-    print("Writing the DE(t, L(t)) result in csv file...")
+    PETSc.Sys.Print("Writing the DE(t, L(t)) result in csv file...")
     np.savetxt(path_file_DE, np.c_[vect_tL, DE].T, delimiter=',')
 # plot denominator of t(L) (optional)
 if(plot_denom_tL == True):
