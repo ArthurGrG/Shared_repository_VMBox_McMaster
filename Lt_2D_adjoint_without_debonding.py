@@ -8,11 +8,11 @@ from firedrake.petsc import PETSc
 plot_mesh = False
 plot_displacement = False
 plot_denom_tL = False
-write_tL_csv = True; path_file_tL = "./results_csv/tL_square_adj_0-1_10_N200.csv"
-write_DE_csv = True; path_file_DE = "./results_csv/DE_square_adj_0-1_10_N200.csv"
+write_tL_csv = True; path_file_tL = "./results_csv/tL_hex_adj_0-1_10_N200.csv"
+write_DE_csv = True; path_file_DE = "./results_csv/DE_hex_adj_0-1_10_N200.csv"
 const_k = 1.
 const_nu = 0.25
-cell = "square"
+cell = "hexagonal"
 
 """Functions for the variational formulation"""
 def sym_grad(v): 
