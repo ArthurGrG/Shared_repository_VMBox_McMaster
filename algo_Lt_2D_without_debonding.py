@@ -15,10 +15,10 @@ from firedrake.petsc import PETSc
 """General parameters"""
 #fd.OMP_NUM_THREADS=1
 plot_mesh = False
-plot_displacement = False
+plot_displacement = True
 plot_denom_tL = False
-write_tL_csv = True; path_file_tL = "./results_csv/tL_square_0-1_10_N1500.csv"
-write_DE_csv = True; path_file_DE = "./results_csv/DE_square_0-1_10_N1500.csv"
+write_tL_csv = False; path_file_tL = "./results_csv/tL_square_0-1_10_N1500.csv"
+write_DE_csv = False; path_file_DE = "./results_csv/DE_square_0-1_10_N1500.csv"
 const_k = 1.
 const_nu = 0.25
 cell = "square"
@@ -32,10 +32,10 @@ def sigma(v, nu):
 
 """(1) Discretization for the values of L"""
 # number of points
-N = 1500
+N = 2
 # inf/sup boundaries
-b_inf = 0.1
-b_sup = 10
+b_inf = 1.
+b_sup = 2.
 # discretization step
 h = (b_sup-b_inf)/(N-1)
 # discretization vector
@@ -75,8 +75,10 @@ for i in range(0, N):
     # variable for L²
     L2 = vect_L[i]**2
     # update the function f wrt the used cell
-    if(cell == "square"):   
-        f = fd.interpolate(float(vect_L[i])*(x - fd.Constant((1/2,1/2))), V)
+    if(cell == "square"):  
+        test = fd.as_vector((x[0] - 1/2, 2.5*(x[1] - 1/2))) 
+        #f = fd.interpolate(float(vect_L[i])*(x - fd.Constant((1/2,1/2))), V)
+        f = fd.interpolate(float(vect_L[i])*test, V)
     if(cell == "hexagonal"):
         f = fd.interpolate(float(vect_L[i])*x, V)
     # bilinear and linear forms

@@ -4,12 +4,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 from firedrake.petsc import PETSc
 
+
 """General parameters"""
 plot_mesh = False
 plot_displacement = False
-plot_denom_tL = False
-write_tL_csv = False; path_file_tL = "./results_csv/tL_hex_adj_0-1_10_N200.csv"
-write_DE_csv = False; path_file_DE = "./results_csv/DE_hex_adj_0-1_10_N200.csv"
+write_FpL_csv = True; path_file_tL = "./results_csv/FpL_square_adj_0-1_5_N150.csv"
 const_k = 1.
 const_nu = 0.25
 cell = "square"
@@ -24,10 +23,10 @@ def sigma(v, nu):
 
 """(1) Discretization for the values of L"""
 # number of points
-N = 200
+N = 150
 # inf/sup boundaries
 b_inf = 0.1
-b_sup = 10
+b_sup = 5.
 # discretization step
 h = (b_sup-b_inf)/(N-1)
 # discretization vector
@@ -57,7 +56,9 @@ x = fd.SpatialCoordinate(mesh)
 # declaration of the test and trial functions to compute F(L)
 u = fd.TrialFunction(V)
 v = fd.TestFunction(V)
-    
+# declaration of the test and trial functions to compute F'(L) (adjoint) 
+lbda = fd.TrialFunction(V)
+vp = fd.TestFunction(V)
 
 """(3) Computation of the F(Li) and F'(Li) values with the adjoint state"""
 PETSc.Sys.Print('Computation of the values of F(L) and F\'(L)...')
@@ -91,47 +92,10 @@ for i in range(0, N):
     F_L = fd.assemble(energy)
     vect_FL[i] = F_L
     # computation of F'(L)
-    FpL = const_k*L*(fd.dot(w, w) + 3*fd.dot(w, f) + 2*fd.dot(f, f))*fd.dx 
+    FpL = L*(fd.dot(w, w) + 3*fd.dot(w, f) + 2*fd.dot(f, f))*fd.dx 
     vect_Fp_L[i] = fd.assemble(FpL)
 
-    
-"""(4) Computation of the t(Li), i = 0, ..., N and wrinting in csv file"""
-PETSc.Sys.Print('Computation of t(L)...')
-# number of edges for the cell considered
-if cell == "square": 
-    nb_edges = 4
-if(cell == "hexagonal"):
-    nb_edges = 6
-# initialization of the t(Li) vector 
-vect_tL = np.zeros(N)
-# initialization of the vector of the denominator of t(L) (optional)
-if(plot_denom_tL == True):
-    vect_denom_tL = np.zeros(N)
-# loop over the values of L 
-for i in range(0, N): 
-    L = vect_L[i]
-    FL = vect_FL[i]
-    FpL = vect_Fp_L[i]
-    denom_tL = FpL*L - 2*FL
-    vect_tL[i] = np.sqrt((L*nb_edges)/np.abs(denom_tL))
-    if(plot_denom_tL == True): 
-        vect_denom_tL[i] = denom_tL
-# writing the result of t(L) in a file 
-if(write_tL_csv == True):
+
+if(write_FpL_csv == True):
     PETSc.Sys.Print("Writing the t(L) result in csv file...")
-    np.savetxt(path_file_tL, np.c_[vect_L, vect_tL].T, delimiter=',')
-# writing the result of the energy density DE(t, L(t))
-if(write_DE_csv == True): 
-    if(cell == "square"):
-        DE = ((vect_tL**2)*vect_FL + nb_edges*vect_L)/(vect_L**2)
-    if(cell == "hexagonal"):
-        DE = (2/(np.sqrt(3)*3))*(((vect_tL**2)*vect_FL + nb_edges*vect_L)/(vect_L**2))
-    PETSc.Sys.Print("Writing the DE(t, L(t)) result in csv file...")
-    np.savetxt(path_file_DE, np.c_[vect_tL, DE].T, delimiter=',')
-# plot denominator of t(L) (optional)
-if(plot_denom_tL == True):
-    plt.figure()
-    plt.plot(vect_L, vect_denom_tL, color='red', marker='o', label='denominator of t(L)')
-    plt.axhline(y=0, color='black', linestyle='--')
-    plt.legend()
-    plt.show(block=True)
+    np.savetxt(path_file_tL, np.c_[vect_L, vect_Fp_L].T, delimiter=',')
