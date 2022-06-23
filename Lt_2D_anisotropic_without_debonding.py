@@ -8,13 +8,13 @@ from firedrake.petsc import PETSc
 plot_mesh = False
 plot_displacement = False
 plot_denom_tL = False
-write_tL_csv = True; path_file_tL = "./results_csv/tL_square_aniso_rho1-3_c1-5_0-1_10_N150.csv"
-write_DE_csv = True; path_file_DE = "./results_csv/DE_square_aniso_rho1-3_c1-5_0-1_10_N150.csv"
+write_tL_csv = True; path_file_tL = "./results_csv/tL_hex_aniso_rho1-3_c1-5_0-1_10_N150.csv"
+write_DE_csv = True; path_file_DE = "./results_csv/DE_hex_aniso_rho1-3_c1-5_0-1_10_N150.csv"
 const_k = 1.
 const_nu = 0.25
 rho = 1.3
 c2 = 1.5
-cell = "square"
+cell = "hexagonal"
 
 """Functions for the variational formulation"""
 def sym_grad(v): 
@@ -82,8 +82,8 @@ for i in range(0, N):
         vec_f = fd.as_vector((x[0] - 1/2, c2*(x[1] - 1/2))) 
         f = fd.interpolate(L*vec_f, V)
     if(cell == "hexagonal"):
-        # A FAIRE
-        f = fd.interpolate(L*x, V)
+        vec_f = fd.as_vector((x[0], c2*x[1]))
+        f = fd.interpolate(L*vec_f, V)
     # bilinear and linear forms
     mat_bil = fd.as_matrix([[rho, 0], [0, 1]])
     a = (sigma(u, v, const_nu, rho) + const_k*rho*L2*fd.dot(mat_bil*u, mat_bil*v))*fd.dx
@@ -110,10 +110,9 @@ for i in range(0, N):
 PETSc.Sys.Print('Computation of t(L)...')
 # number of edges for the cell considered
 if cell == "square": 
-    nb_edges = 2
+    weight_frac = 2*(rho + 1)
 if(cell == "hexagonal"):
-    # A FAIRE
-    nb_edges = 6
+    weight_frac = 2*(rho + np.sqrt(rho**2 + 3))
 # initialization of the t(Li) vector 
 vect_tL = np.zeros(N)
 # initialization of the vector of the denominator of t(L) (optional)
@@ -125,7 +124,7 @@ for i in range(0, N):
     FL = vect_FL[i]
     FpL = vect_Fp_L[i]
     denom_tL = FpL*L - 2*FL
-    vect_tL[i] = np.sqrt((L*nb_edges*(rho+1))/np.abs(denom_tL))
+    vect_tL[i] = np.sqrt((L*weight_frac)/np.abs(denom_tL))
     if(plot_denom_tL == True): 
         vect_denom_tL[i] = denom_tL
 # writing the result of t(L) in a file 
@@ -135,10 +134,9 @@ if(write_tL_csv == True):
 # writing the result of the energy density DE(t, L(t))
 if(write_DE_csv == True): 
     if(cell == "square"):
-        DE = (vect_tL**2)*(vect_FL/(rho*(vect_L**2))) + nb_edges*(rho + 1)/(rho*vect_L)
+        DE = (vect_tL**2)*(vect_FL/(rho*(vect_L**2))) + weight_frac/(rho*vect_L)
     if(cell == "hexagonal"):
-        # A FAIRE
-        DE = (2/(np.sqrt(3)*3))*(((vect_tL**2)*vect_FL + nb_edges*vect_L)/(vect_L**2))
+        DE = (2/(np.sqrt(3)*3))*((vect_tL**2)*(vect_FL/(rho*(vect_L**2))) + weight_frac/(rho*vect_L))
     PETSc.Sys.Print("Writing the DE(t, L(t)) result in csv file...")
     np.savetxt(path_file_DE, np.c_[vect_tL, DE].T, delimiter=',')
 # plot denominator of t(L) (optional)

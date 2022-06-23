@@ -12,17 +12,19 @@ import matplotlib.pyplot as plt
 
 """Reading the csv file with numpy"""
 # path file for t(L) with adj 
-square_file_tL_adj = './results_csv/tL_square_adj_0-1_10_N200.csv'
-hex_file_tL_adj = './results_csv/tL_hex_adj_0-1_10_N200.csv'
+square_file_tL_adj = './results_csv/results_adjoint/tL_square_adj_0-1_10_N200.csv'
+hex_file_tL_adj = './results_csv/results_adjoint/tL_hex_adj_0-1_10_N200.csv'
 # path file for DE(t, L(t)) with adj 
-square_file_DE_adj = './results_csv/DE_square_adj_0-1_10_N200.csv'
-hex_file_DE_adj = './results_csv/DE_hex_adj_0-1_10_N200.csv'
+square_file_DE_adj = './results_csv/results_adjoint/DE_square_adj_0-1_10_N200.csv'
+hex_file_DE_adj = './results_csv/results_adjoint/DE_hex_adj_0-1_10_N200.csv'
 # path file for t(L) with adj 
-square_file_tL_df = './results_csv/tL_square_0-1_10_N1500.csv'
-hex_file_tL_df = './results_csv/tL_hex_0-1_10_N1500.csv'
+square_file_tL_df = './results_csv/results_df/tL_square_0-1_10_N1500.csv'
+hex_file_tL_df = './results_csv/results_df/tL_hex_0-1_10_N1500.csv'
 # path file for DE(t, L(t)) with adj 
-square_file_DE_df = './results_csv/DE_square_0-1_10_N1500.csv'
-hex_file_DE_df = './results_csv/DE_hex_0-1_10_N1500.csv'
+square_file_DE_df = './results_csv/results_df/DE_square_0-1_10_N1500.csv'
+hex_file_DE_df = './results_csv/results_df/DE_hex_0-1_10_N1500.csv'
+# dichotomy results for L(t) 
+path_dicho = './results_csv/results_dichotomy/Lt_iso_square_0-1_10_N50.csv'
 
 
 # reading files adj
@@ -35,6 +37,9 @@ array_square_tL_df = np.genfromtxt(square_file_tL_df, delimiter=',')
 array_hex_tL_df = np.genfromtxt(hex_file_tL_df, delimiter=',')
 array_square_DE_df = np.genfromtxt(square_file_DE_df, delimiter=',')
 array_hex_DE_df = np.genfromtxt(hex_file_DE_df, delimiter=',')
+# reading file dichotomy
+array_dicho = np.genfromtxt(path_dicho, delimiter=',')
+
 
 
 """Plotting the t(L) curves"""
@@ -44,6 +49,7 @@ plt.plot(array_square_tL_adj[1, :], array_square_tL_adj[0, :], color='red', labe
 plt.plot(array_hex_tL_adj[1, :], array_hex_tL_adj[0, :], color='blue', label='L(t) hex adj')
 plt.plot(array_square_tL_df[1, :], array_square_tL_df[0, :], color='green', label='L(t) square df')
 plt.plot(array_hex_tL_df[1, :], array_hex_tL_df[0, :], color='purple', label='L(t) hex df')
+plt.plot(array_dicho[0, :], array_dicho[1, :], color='darkorange', label='L(t) dicho')
 plt.grid()
 plt.legend()
 plt.show()
