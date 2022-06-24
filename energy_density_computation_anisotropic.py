@@ -20,7 +20,7 @@ def sigma(u, v, nu, rho):
 
 
 """General parameters"""
-write_tL_csv = True; path_file = "./results_csv/results_DE_anisotropic/DE_square_t1-8_c2-0_rho0-2_4-0_L0-2-4-0_N50.csv"
+write_tL_csv = True; path_file = "./results_csv/results_DE_anisotropic/DE_square_t1-8_c2-0_L1-9_rho0-1_10-0_N200.csv"
 const_k = 1.
 const_nu = 0.25
 t = 1.8
@@ -29,14 +29,14 @@ c2 = 2.
 
 """Discretization for the values of L and rho"""
 # number of points
-N = 50
+N = 200
 # inf/sup boundaries
-b_inf = 0.2
-b_sup = 4
+b_inf = 0.1
+b_sup = 10
 # discretization step
 h = (b_sup-b_inf)/(N-1)
 # discretization vector
-vect_L = np.arange(start=b_inf, stop=b_sup+(h-1e-7), step=h)
+vect_L = np.array([1.9])#np.arange(start=b_inf, stop=b_sup+(h-1e-7), step=h)
 vect_rho = np.arange(start=b_inf, stop=b_sup+(h-1e-7), step=h)
 
 
@@ -61,9 +61,9 @@ PETSc.Sys.Print('Computation of the values of DE(t, c2, rho, L)...')
 # initialization of the F(Li) vector
 vect_DE = np.zeros(vect_L.size*vect_rho.size)
 # loop over the values of L 
-for i in range(0, N): 
+for i in range(0, 1): 
     for j in range(0, N): 
-        PETSc.Sys.Print('Index %d / %d' % (i*N + j, N**2))
+        PETSc.Sys.Print('Index %d / %d' % (i*N + j, N))
         # float variables for L and L²
         L = float(vect_L[i])
         rho = float(vect_rho[j])
