@@ -8,30 +8,33 @@ from firedrake.petsc import PETSc
 plot_mesh = False
 plot_displacement = False
 plot_denom_tL = False
-write_tL_csv = False; path_file_tL = "./results_csv/tL_hex_adj_0-1_10_N200.csv"
-write_DE_csv = False; path_file_DE = "./results_csv/DE_hex_adj_0-1_10_N200.csv"
-const_k = 1.
-const_nu = 0.25
+write_tL_csv = False; path_file_tL = "./results_csv/results_isotropic_juillet/tL_square_0-003_0-3_micrometres_N150.csv"
+write_DE_csv = False; path_file_DE = "./results_csv/results_isotropic_juillet/DE_square_adj_0-01_100_N150.csv"
+hf = 2.6e-4
+const_k = 2e2
+const_nu = 0.45
 cell = "square"
 
 """Functions for the variational formulation"""
 def sym_grad(v): 
     return fd.sym(fd.grad(v))
 
-def sigma(v, nu):
-    return (nu/((1+nu)*(1-2*nu)))*fd.tr(sym_grad(v))*fd.Identity(2) + (1/(1+nu))*sym_grad(v)
+"""def sigma(v, nu):
+    return (nu/((1+nu)*(1-2*nu)))*fd.tr(sym_grad(v))*fd.Identity(2) + (1/(1+nu))*sym_grad(v)"""
 
+def sigma(v, nu, h):
+    return ((nu*h)/((1+nu)*(1-nu)))*fd.tr(sym_grad(v))*fd.Identity(2) + (h/(1+nu))*sym_grad(v)
 
 """(1) Discretization for the values of L"""
 # number of points
-N = 200
+N = 1
 # inf/sup boundaries
-b_inf = 0.1
-b_sup = 10
+b_inf = 3000
+b_sup = 300000
 # discretization step
-h = (b_sup-b_inf)/(N-1)
+#h = (b_sup-b_inf)/(N-1)
 # discretization vector
-vect_L = np.arange(start=b_inf, stop=b_sup+(h-1e-7), step=h)
+vect_L = np.array([0.0028])#np.arange(start=b_inf, stop=b_sup+(h-1e-7), step=h)
 
 
 """(2) Definition of the unique mesh"""
@@ -76,7 +79,7 @@ for i in range(0, N):
     if(cell == "hexagonal"):
         f = fd.interpolate(L*x, V)
     # bilinear and linear forms
-    a = (fd.inner(sigma(u, const_nu), sym_grad(v)) + const_k*L2*fd.dot(u, v))*fd.dx
+    a = (fd.inner(sigma(u, const_nu, hf), sym_grad(v)) + const_k*L2*fd.dot(u, v))*fd.dx
     l = -const_k*L2*fd.dot(f, v)*fd.dx
     # solution
     w = fd.Function(V, name="Displacement")
@@ -87,7 +90,7 @@ for i in range(0, N):
         fig.colorbar(contours, ax=axes)
         plt.show(block=True)
     # computation of F(L)
-    energy = (1/2)*(fd.inner(sigma(w, const_nu), sym_grad(w)) + const_k*L2*fd.dot(w + f, w + f))*fd.dx
+    energy = (1/2)*(fd.inner(sigma(w, const_nu, hf), sym_grad(w)) + const_k*L2*fd.dot(w + f, w + f))*fd.dx
     F_L = fd.assemble(energy)
     vect_FL[i] = F_L
     # computation of F'(L)
@@ -99,9 +102,9 @@ for i in range(0, N):
 PETSc.Sys.Print('Computation of t(L)...')
 # number of edges for the cell considered
 if cell == "square": 
-    nb_edges = 4
+    nb_edges = 2
 if(cell == "hexagonal"):
-    nb_edges = 6
+    nb_edges = 3
 # initialization of the t(Li) vector 
 vect_tL = np.zeros(N)
 # initialization of the vector of the denominator of t(L) (optional)
@@ -135,3 +138,4 @@ if(plot_denom_tL == True):
     plt.axhline(y=0, color='black', linestyle='--')
     plt.legend()
     plt.show(block=True)
+print(vect_tL)

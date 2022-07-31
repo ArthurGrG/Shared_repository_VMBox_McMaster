@@ -8,37 +8,40 @@ from firedrake.petsc import PETSc
 plot_mesh = False
 plot_displacement = False
 plot_denom_tL = False
-write_tL_csv = True; path_file_tL = "./results_csv/tL_hex_aniso_rho1-3_c1-5_0-1_10_N150.csv"
+write_tL_csv = False; path_file_tL = "./results_csv/tL_hex_aniso_rho1-3_c1-5_0-1_10_N150.csv"
 write_DE_csv = True; path_file_DE = "./results_csv/DE_hex_aniso_rho1-3_c1-5_0-1_10_N150.csv"
-const_k = 1.
-const_nu = 0.25
-rho = 1.3
-c2 = 1.5
-cell = "hexagonal"
+const_k = 2e-4
+const_nu = 0.45
+hf = 260
+rho = 1.0
+c2 = 1.0
+cell = "square"
 
 """Functions for the variational formulation"""
 def sym_grad(v): 
     return fd.sym(fd.grad(v))
 
-def sigma(u, v, nu, rho): 
-    lbda_nu = (nu/((1+nu)*(1-2*nu)))
-    mu_nu = (1/(2*(1+nu)))
+def sigma(u, v, nu, h, rho): 
+    lbda_nu = ((nu*h)/((1+nu)*(1-nu)))
+    mu_nu = (h/(2*(1+nu)))
     A = np.zeros((2, 2, 2, 2))
     A[0, 0, 0, 0] =  (rho**3)*(lbda_nu + 2*mu_nu)
     A[1, 1, 1, 1] = (1/rho)*(lbda_nu + 2*mu_nu)
+    A[1, 1, 0, 0] = rho*lbda_nu; A[0, 0, 1, 1] = rho*lbda_nu
     A[0, 1, 0, 1] = rho*mu_nu; A[1, 0, 0, 1] = rho*mu_nu; A[0, 1, 1, 0] = rho*mu_nu; A[1, 0, 1, 0] = rho*mu_nu
     return fd.inner(fd.as_tensor(A), fd.outer(sym_grad(u), sym_grad(v)))
 
+
 """(1) Discretization for the values of L"""
 # number of points
-N = 150
+N = 1
 # inf/sup boundaries
 b_inf = 0.1
 b_sup = 10
 # discretization step
-h = (b_sup-b_inf)/(N-1)
+#h = (b_sup-b_inf)/(N-1)
 # discretization vector
-vect_L = np.arange(start=b_inf, stop=b_sup+(h-1e-7), step=h)
+vect_L = np.array([4000.0])#np.arange(start=b_inf, stop=b_sup+(h-1e-7), step=h)
 
 
 """(2) Definition of the unique mesh"""
@@ -86,7 +89,7 @@ for i in range(0, N):
         f = fd.interpolate(L*vec_f, V)
     # bilinear and linear forms
     mat_bil = fd.as_matrix([[rho, 0], [0, 1]])
-    a = (sigma(u, v, const_nu, rho) + const_k*rho*L2*fd.dot(mat_bil*u, mat_bil*v))*fd.dx
+    a = (sigma(u, v, const_nu, hf, rho) + const_k*rho*L2*fd.dot(mat_bil*u, mat_bil*v))*fd.dx
     l = -const_k*(rho**2)*L2*fd.dot(f, v)*fd.dx
     # solution
     w = fd.Function(V, name="Displacement")
@@ -98,7 +101,7 @@ for i in range(0, N):
         plt.show(block=True)
     # computation of F(L)
     f_energy = fd.interpolate(L*fd.as_vector((x[0] - 1/2, c2*rho*(x[1] - 1/2))), V)
-    energy = (1/2)*(sigma(w, w, const_nu, rho) + const_k*L2*rho*fd.dot(mat_bil*w + f_energy, mat_bil*w + f_energy))*fd.dx
+    energy = (1/2)*(sigma(w, w, const_nu, hf, rho) + const_k*L2*rho*fd.dot(mat_bil*w + f_energy, mat_bil*w + f_energy))*fd.dx
     F_L = fd.assemble(energy)
     vect_FL[i] = F_L
     # computation of F'(L)
@@ -110,7 +113,7 @@ for i in range(0, N):
 PETSc.Sys.Print('Computation of t(L)...')
 # number of edges for the cell considered
 if cell == "square": 
-    weight_frac = 2*(rho + 1)
+    weight_frac = (rho + 1)
 if(cell == "hexagonal"):
     weight_frac = 2*(rho + np.sqrt(rho**2 + 3))
 # initialization of the t(Li) vector 
@@ -134,11 +137,13 @@ if(write_tL_csv == True):
 # writing the result of the energy density DE(t, L(t))
 if(write_DE_csv == True): 
     if(cell == "square"):
+        vect_tL = vect_tL = 0.0021022
         DE = (vect_tL**2)*(vect_FL/(rho*(vect_L**2))) + weight_frac/(rho*vect_L)
+        print(DE)
     if(cell == "hexagonal"):
         DE = (2/(np.sqrt(3)*3))*((vect_tL**2)*(vect_FL/(rho*(vect_L**2))) + weight_frac/(rho*vect_L))
     PETSc.Sys.Print("Writing the DE(t, L(t)) result in csv file...")
-    np.savetxt(path_file_DE, np.c_[vect_tL, DE].T, delimiter=',')
+    #np.savetxt(path_file_DE, np.c_[vect_tL, DE].T, delimiter=',')
 # plot denominator of t(L) (optional)
 if(plot_denom_tL == True):
     plt.figure()

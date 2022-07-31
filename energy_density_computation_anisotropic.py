@@ -20,24 +20,24 @@ def sigma(u, v, nu, rho):
 
 
 """General parameters"""
-write_tL_csv = True; path_file = "./results_csv/results_DE_anisotropic/DE_square_t1-8_c2-0_L1-9_rho0-1_10-0_N200.csv"
+write_tL_csv = True; path_file = "./results_csv/results_DE_anisotropic/DE_square_t1-4_c2-1_rho2-0_L0-1_10-0_N150.csv"
 const_k = 1.
 const_nu = 0.25
-t = 1.8
-c2 = 2.
+t = 1.4
+c2 = 2.1
 
 
 """Discretization for the values of L and rho"""
 # number of points
-N = 200
+N = 150
 # inf/sup boundaries
 b_inf = 0.1
 b_sup = 10
 # discretization step
 h = (b_sup-b_inf)/(N-1)
 # discretization vector
-vect_L = np.array([1.9])#np.arange(start=b_inf, stop=b_sup+(h-1e-7), step=h)
-vect_rho = np.arange(start=b_inf, stop=b_sup+(h-1e-7), step=h)
+vect_L = np.arange(start=b_inf, stop=b_sup+(h-1e-7), step=h)
+vect_rho = np.array([2.0])#np.arange(start=b_inf, stop=b_sup+(h-1e-7), step=h)
 
 
 """Definition of the square mesh"""
@@ -61,9 +61,9 @@ PETSc.Sys.Print('Computation of the values of DE(t, c2, rho, L)...')
 # initialization of the F(Li) vector
 vect_DE = np.zeros(vect_L.size*vect_rho.size)
 # loop over the values of L 
-for i in range(0, 1): 
-    for j in range(0, N): 
-        PETSc.Sys.Print('Index %d / %d' % (i*N + j, N))
+for i in range(0, N): 
+    for j in range(0, 1): 
+        PETSc.Sys.Print('Index %d / %d' % (i + j, N))
         # float variables for L and L²
         L = float(vect_L[i])
         rho = float(vect_rho[j])
@@ -82,7 +82,7 @@ for i in range(0, 1):
         f_energy = fd.interpolate(L*fd.as_vector((x[0] - 1/2, c2*rho*(x[1] - 1/2))), V)
         energy = (1/2)*(sigma(w, w, const_nu, rho) + const_k*L2*rho*fd.dot(mat_bil*w + f_energy, mat_bil*w + f_energy))*fd.dx
         F_L = fd.assemble(energy)
-        vect_DE[i*N + j] = (t**2)*(F_L/(rho*L2)) + 2/L + 2/(rho*L)
+        vect_DE[i + j] = (t**2)*(F_L/(rho*L2)) + 2/L + 2/(rho*L)
 
 
 if(write_tL_csv == True):

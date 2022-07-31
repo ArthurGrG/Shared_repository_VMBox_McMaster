@@ -1,0 +1,6 @@
+<?xml version="1.0" ?>
+<VTKFile type="Collection" version="0.1" byte_order="LittleEndian">
+<Collection>
+<DataSet timestep="0" file="displacement_first_elastic_problem_canvas_0.vtu" />
+</Collection>
+</VTKFile>

@@ -15,24 +15,31 @@ b_sup = 4
 # discretization step
 h = (b_sup-b_inf)/(N-1)
 # discretization vector
-vect_L = np.arange(start=b_inf, stop=b_sup+(h-1e-7), step=h)[3:38]
-vect_rho = np.arange(start=b_inf, stop=b_sup+(h-1e-7), step=h)[8:38]
+vect_L = np.arange(start=b_inf, stop=b_sup+(h-1e-7), step=h)[:]
+vect_rho = np.arange(start=b_inf, stop=b_sup+(h-1e-7), step=h)[:]
 
 # grid 
 Y, X = np.meshgrid(vect_L, vect_rho)
-Z = vect_DE.reshape((N, N))[8:38, 3:38]
+Z = vect_DE.reshape((N, N))[:, :]
 
 # plot 
-"""fig = plt.figure()
+fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 ax.plot_surface(X, Y, Z)
 ax.set_xlabel('L')
 ax.set_ylabel('rho')
 ax.set_zlabel('DE(L, rho)')
-plt.show()"""
+plt.show()
+
+a = 2; b = 27
+c = 14; d = 39
+vect_L = np.arange(start=b_inf, stop=b_sup+(h-1e-7), step=h)[a:b]
+vect_rho = np.arange(start=b_inf, stop=b_sup+(h-1e-7), step=h)[c:d]
+Y, X = np.meshgrid(vect_L, vect_rho)
+Z = vect_DE.reshape((N, N))[c:d, a:b]
 
 plt.figure()
-plt.contourf(X, Y, Z, 200)
+plt.contour(X, Y, Z, 200)
 plt.colorbar()
 plt.show()
 

@@ -6,15 +6,15 @@ from firedrake.petsc import PETSc
 
 
 """General parameters"""
-const_k = 1.
-const_nu = 0.25
+hf = 2.6e-4
+const_k = 1e3
+const_nu = 0.3
 cell = "square"
-eps = 5e-5
-step = 0.3
-MAX_ITER = 40
-L_MIN = 0.05
-L_MAX = 15
-write_result = True; path_result = './results_csv/results_dichotomy/Lt_iso_square_0-1_10_N50.csv'
+eps = 5e-8
+MAX_ITER = 100
+L_MIN = 0.1
+L_MAX = 10
+write_result = False; path_result = './results_csv/results_dichotomy/Lt_iso_square_0-1_10_N50.csv'
 
 
 """Values of t"""
@@ -26,15 +26,18 @@ for j in range(0, t_values.size):
     if(j%4 == 0): 
         vect_t[cmp] = t_values[j]
         cmp = cmp + 1
-
+vect_t = np.array([0.62204105])
 
 
 """Functions for the variational formulation"""
 def sym_grad(v): 
     return fd.sym(fd.grad(v))
 
-def sigma(v, nu):
-    return (nu/((1+nu)*(1-2*nu)))*fd.tr(sym_grad(v))*fd.Identity(2) + (1/(1+nu))*sym_grad(v)
+"""def sigma(v, nu):
+    return (nu/((1+nu)*(1-2*nu)))*fd.tr(sym_grad(v))*fd.Identity(2) + (1/(1+nu))*sym_grad(v)"""
+
+def sigma(v, nu, h):
+    return ((nu*h)/(2*(1+nu)*(1-nu)))*fd.tr(sym_grad(v))*fd.Identity(2) + (h/(1+nu))*sym_grad(v)
 
 
 """Definition of the unique mesh"""
@@ -70,14 +73,14 @@ for i in range(0, vect_t.size):
             f = fd.interpolate(L*(x - fd.Constant((1/2,1/2))), V)
         if(cell == "hexagonal"):
             f = fd.interpolate(L*x, V)
-        a = (fd.inner(sigma(u, const_nu), sym_grad(v)) + const_k*(L**2)*fd.dot(u, v))*fd.dx
+        a = (fd.inner(sigma(u, const_nu, hf), sym_grad(v)) + const_k*(L**2)*fd.dot(u, v))*fd.dx
         l = -const_k*(L**2)*fd.dot(f, v)*fd.dx
         w = fd.Function(V, name="Displacement")
         fd.solve(a == l, w, solver_parameters={'ksp_type': 'cg'})
         FL = fd.assemble((1/2)*(fd.inner(sigma(w, const_nu), sym_grad(w)) + const_k*(L**2)*fd.dot(w + f, w + f))*fd.dx)
         FpL = fd.assemble(const_k*L*(fd.dot(w, w) + 3*fd.dot(w, f) + 2*fd.dot(f, f))*fd.dx)
         if(cell == "square"):
-            grad_DE = (t**2)*((FpL*L - 2*FL)/(L**3)) - 4/(L**2)
+            grad_DE = (t**2)*((FpL*L - 2*FL)/(L**3)) - 2/(L**2)
         if(cell == 'hexagonal'): 
             grad_DE = 0 # A FAIRE
         PETSc.Sys.Print('Iteration: %d -> Gradient: %f -> Value of L_inf: %f // Value of L_sup: %f // Value of L: %f' % (k, grad_DE, L_inf, L_sup, L))
