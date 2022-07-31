@@ -101,7 +101,7 @@ def FormObjGrad(tao, y, G):
 nb_discr = 1
 vect_rho = np.zeros(nb_discr)
 vect_L = np.zeros(nb_discr)
-vect_t = np.array([2245.65863873])
+vect_t = np.array([11147.77891255])
 cmpt = 0
 for val in vect_t:
     t = val
@@ -118,11 +118,11 @@ for val in vect_t:
     lb = PETSc.Vec().create(PETSc.COMM_SELF)
     lb.setSizes(int(2))
     lb.setFromOptions()
-    lb.set(1e-3)
+    lb.set(1e-4)
     ub = PETSc.Vec().create(PETSc.COMM_SELF)
     ub.setSizes(int(2))
     ub.setFromOptions()
-    ub.set(1e25)
+    ub.set(1e8)
     """TAO section"""
     tao = PETSc.TAO().create(PETSc.COMM_SELF)
     tao.setType('blmvm')

@@ -9,7 +9,7 @@ plot_mesh = False
 plot_displacement = False
 plot_denom_tL = False
 write_tL_csv = False; path_file_tL = "./results_csv/results_isotropic_juillet/tL_square_0-003_0-3_micrometres_N150.csv"
-write_DE_csv = False; path_file_DE = "./results_csv/results_isotropic_juillet/DE_square_adj_0-01_100_N150.csv"
+write_DE_csv = True; path_file_DE = "./results_csv/results_isotropic_juillet/DE_square_adj_0-01_100_N150.csv"
 hf = 2.6e-4
 const_k = 2e2
 const_nu = 0.45
@@ -34,7 +34,7 @@ b_sup = 300000
 # discretization step
 #h = (b_sup-b_inf)/(N-1)
 # discretization vector
-vect_L = np.array([0.0028])#np.arange(start=b_inf, stop=b_sup+(h-1e-7), step=h)
+vect_L = np.array([0.0008])#np.arange(start=b_inf, stop=b_sup+(h-1e-7), step=h)
 
 
 """(2) Definition of the unique mesh"""
@@ -126,11 +126,13 @@ if(write_tL_csv == True):
 # writing the result of the energy density DE(t, L(t))
 if(write_DE_csv == True): 
     if(cell == "square"):
+        vect_tL = 11147.77891255
         DE = ((vect_tL**2)*vect_FL + nb_edges*vect_L)/(vect_L**2)
+        print(DE)
     if(cell == "hexagonal"):
         DE = (2/(np.sqrt(3)*3))*(((vect_tL**2)*vect_FL + nb_edges*vect_L)/(vect_L**2))
     PETSc.Sys.Print("Writing the DE(t, L(t)) result in csv file...")
-    np.savetxt(path_file_DE, np.c_[vect_tL, DE].T, delimiter=',')
+    #np.savetxt(path_file_DE, np.c_[vect_tL, DE].T, delimiter=',')
 # plot denominator of t(L) (optional)
 if(plot_denom_tL == True):
     plt.figure()
@@ -138,4 +140,3 @@ if(plot_denom_tL == True):
     plt.axhline(y=0, color='black', linestyle='--')
     plt.legend()
     plt.show(block=True)
-print(vect_tL)
