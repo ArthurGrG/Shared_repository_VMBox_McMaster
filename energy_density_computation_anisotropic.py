@@ -29,7 +29,7 @@ def sigma_R(u, v, nu, h, rho):
 
 
 """General parameters"""
-write_tL_csv = True; path_file = "./results_csv/results_DE_anisotropic/DE&grad_square_t11147_c1_rho0-009_1-1_L0-0001_0-5_N150.csv"
+write_tL_csv = True; path_file = "./results_csv/results_DE_anisotropic/DE&grad_square_t11147_c1_rho0-009_1-1_L0-0001_0-5_N50.csv"
 const_nu = 0.45
 hf = 2.6e-4
 const_k = 2e2
@@ -39,12 +39,12 @@ t = 11147.77891255
 
 """Discretization for the values of L and rho"""
 # number of points
-N = 150
+N = 40
 # inf/sup boundaries
-b_inf_rho = 0.009
+b_inf_rho = 0.01
 b_sup_rho = 1.1
 b_inf_L = 0.0001
-b_sup_L = 0.5
+b_sup_L = 0.01
 # discretization step
 h_rho = (b_sup_rho-b_inf_rho)/(N-1)
 h_L = (b_sup_L-b_inf_L)/(N-1)
